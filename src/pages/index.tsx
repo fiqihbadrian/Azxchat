@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import SocketIOClient, { Socket } from "socket.io-client";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSmile, faPaperPlane, faArrowDown } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faTimes, faSmile, faPaperPlane, faArrowDown } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import { Permanent_Marker } from "next/font/google";
 
@@ -32,6 +32,7 @@ export default function Home() {
   const [systemMessage, setSystemMessage] = useState<string>("");
   const [showEmotePopup, setShowEmotePopup] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const scrollToBottom = () => {
     if (chatContainerRef.current) {
@@ -132,7 +133,6 @@ export default function Home() {
     <div className="flex flex-col w-full h-screen bg-base-200">
       {!isLoggedIn ? (
         <div className="flex flex-col justify-center items-center h-full w-full">
-          {/* logo */}
           <Image src="/images/logo.png" alt="Logo" width={100} height={100} className="mb-4" />
           <h1 className="text-3xl font-semibold text-white mb-4">Login to Chat</h1>
           <input
@@ -154,9 +154,19 @@ export default function Home() {
         </div>
       ) : (
         <div className="flex w-full">
-          <div className="flex flex-col w-1/4 bg-base-300 p-4 h-screen">
+          {/* Sidebar */}
+          <div
+            className={`fixed lg:static transition-transform transform ${
+              isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } lg:translate-x-0 w-64 lg:w-1/4 bg-base-300 p-4 h-screen z-50`}
+          >
+            <button
+              className="lg:hidden absolute top-4 right-4 text-white"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <FontAwesomeIcon icon={faTimes} size="lg" />
+            </button>
             <div className="flex items-center mb-5">
-              {/* Tambahkan logo */}
               <Image src="/images/logo.png" alt="Logo Vercel" width={100} height={100} />
               <h1 className={`${graffitiFont.className} text-success text-xl font-bold`}>AZXchat</h1>
             </div>
@@ -175,16 +185,19 @@ export default function Home() {
             </ul>
           </div>
 
-          <div className="flex-1 flex flex-col h-screen">
-            {/* Chat container */}
-            <div className="p-4 bg-base-100">
-              {systemMessage && (
-                <div className="text-center text-sm text-gray-500 mb-3">
-                  {systemMessage}
-                </div>
-              )}
-            </div>
+          {/* Hamburger Button */}
+          <button
+            className="lg:hidden fixed top-4 left-4 text-white z-50"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <FontAwesomeIcon icon={faBars} size="lg" />
+          </button>
 
+          <div className="flex-1 flex flex-col h-screen">
+            {/* Chat Container */}
+            <div className="p-4 bg-base-100">
+              {systemMessage && <div className="text-center text-sm text-gray-500 mb-3">{systemMessage}</div>}
+            </div>
             <div
               className="flex-1 overflow-y-auto p-4 bg-base-100"
               ref={chatContainerRef}
@@ -197,18 +210,17 @@ export default function Home() {
                 </div>
               ))}
             </div>
-
-            {/* Icon Scroll ke Bawah */}
             {isScrolled && (
               <button onClick={scrollToBottom} className="btn btn-circle btn-success fixed bottom-20 right-11 z-10">
                 <FontAwesomeIcon icon={faArrowDown} />
               </button>
             )}
-
-            {/* Input */}
             <div className="p-4 bg-base-200">
               <div className="flex items-center">
-                <button className="btn btn-default mr-2" onClick={() => setShowEmotePopup(!showEmotePopup)}>
+                <button
+                  className="btn btn-default mr-2"
+                  onClick={() => setShowEmotePopup(!showEmotePopup)}
+                >
                   <FontAwesomeIcon icon={faSmile} />
                 </button>
                 {showEmotePopup && (
@@ -237,7 +249,7 @@ export default function Home() {
                   onChange={(e) => setMsg(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && msg.trim()) {
-                      sendMessage(); // Panggil fungsi sendMessage saat "Enter" ditekan
+                      sendMessage();
                     }
                   }}
                   className="text-white input input-bordered w-full h-12"
